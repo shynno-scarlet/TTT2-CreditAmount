@@ -67,10 +67,11 @@ function CreateTransferMenu(parent)
 	dform = vgui.Create("DForm", parent)
 	dform:SetLabel(GetTranslation("xfer_menutitle"))
 	dform:StretchToParent(0, 0, 0, 0)
+	dform:DockPadding(0,0,0,12)
 	-- DEPRECATED: dform:SetAutoSize(false)
 
 	local w, _ = dform:GetSize()
-	local h = 32
+	local h = 26
 	dsubmit = vgui.Create("DButton", dform)
 	dsubmit:SetSize(w, h)
 	dsubmit:SetEnabled(false)
@@ -84,12 +85,8 @@ function CreateTransferMenu(parent)
 	damount:SetMin(1)
 	damount:SetHistoryEnabled(false)
 
-	function damount:AllowInput(char)
-		return tonumber(char) ~= nil
-	end
-
 	function damount:GetMaxCredits()
-		local creds = client:GetCredits()
+		local creds = LocalPlayer():GetCredits()
 		if creds == nil then creds = 1 end
 		return math.max(creds ,1)
 	end
@@ -97,6 +94,10 @@ function CreateTransferMenu(parent)
 	function damount:SetMaxCredits()
 		local max = self:GetMaxCredits()
 		self:SetMax(max)
+	end
+
+	function damount:OnGetFocus()
+		self:SetMaxCredits()
 	end
 
 	damount:SetMaxCredits()
@@ -156,6 +157,10 @@ function CreateTransferMenu(parent)
 	dsubmit.DoClick = function(s)
 		if selected_sid then
 			shop.TransferCredits(client, selected_sid, damount:GetAmount())
+			timer.Simple(1, function()
+				damount:SetMaxCredits()
+				damount:SetValue(1)
+			end)
 		end
 	end
 
